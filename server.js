@@ -1,22 +1,24 @@
-
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 
 const app = express();
 
+// CORS setup – for now allow all origins
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
 
-app.use(cors());
 app.use(express.json());
 
+// Handle all OPTIONS preflight requests
+app.options('*', cors());
 
-app.use(express.static(path.join(__dirname)));
-
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
+// 🚫 IMPORTANT: We do NOT serve any HTML files here.
+// So we REMOVE:
+//   app.use(express.static(...))
+//   app.get('/', ...)
 
 app.post('/api/contact', (req, res) => {
     const { firstName, lastName, phone, email, services, message } = req.body;
@@ -41,10 +43,9 @@ app.post('/api/contact', (req, res) => {
         success: true,
         message: `Thank you, ${firstName}! We've received your request for "${services}". Our team will contact you soon at ${email}.`
     });
-
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`API running on port ${PORT}`);
 });
